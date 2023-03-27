@@ -1,14 +1,17 @@
 
 class HTTPRequest:
     """A class to represent an HTTP request."""
-    def __init__(self, request_string):
-        self.method = None
-        self.uri = None
-        self.http_version = None
-        self.headers = {}
-        self.body = None
-        
-        self.parse_request(request_string)
+    def __init__(self, request_string,method,uri,http_version,headers,body):
+        self.method = method
+        self.uri = uri
+        self.http_version = http_version
+        self.headers = headers
+        self.body = body
+        # self.parser = HTTPParser(request_string)
+        # self.parser.parse_request(request_string)
+        # parser_obj.parse_request(request_string)
+        # print(parser_obj.body)
+        # # self.parse_request(request_string)
     
     def parse_request(self, request_string):
         """Parses an HTTP request string into its components."""

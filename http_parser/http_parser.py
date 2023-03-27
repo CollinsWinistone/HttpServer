@@ -1,13 +1,12 @@
-class HTTPParser(object):
+class HTTPParser():
     """Parses an HTTP request string into its components."""
-    def __init__(self, request_string):
+    def __init__(self):
         self.method = None
         self.uri = None
         self.http_version = None
         self.headers = {}
         self.body = None
-        
-        self.parse_request(request_string)
+        # self.parse_request(request_string)
     
     def parse_request(self, request_string):
         """parses an HTTP request string into its components"""

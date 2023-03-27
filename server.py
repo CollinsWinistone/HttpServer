@@ -3,28 +3,28 @@ import os
 import logging # log server information
 from Response.response import HTTPResponse
 from Requests.requests import HTTPRequest
-from Php_handler.php_handler import handle_request
-
+from http_parser.http_parser import HTTPParser
+from Php_handler.php_handler import handle_request # handles php execution
 
 logging.basicConfig(filename="server.log", level=logging.INFO)
 
+# Default directory for server resources
 WEB_ROOT = os.path.join(os.path.dirname(__file__), 'web_root')
-print("WEb root is below")
-print(WEB_ROOT)
+
 
 class HTTPServer:
     """Custom HTTP Server to handle requests and return responses
     """
     def __init__(self, host, port, use_https=False):
-        self.host = host
-        self.port = port
-        self.use_https = use_https
+        self.host = host # host name
+        self.port = port # port number
+        self.use_https = use_https # use https or not
         
         # Set up server socket
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((host, port))
     
-    def serve_forever(self):
+    def serve(self):
         # Start listening for incoming connections
         self.server_socket.listen()
         print(f"Server listening on {self.host}:{self.port}...")
@@ -39,8 +39,19 @@ class HTTPServer:
             
 
             try:
-                request = HTTPRequest(request_data)
+                parser = HTTPParser()
+                parser.parse_request(request_data)
+                request = HTTPRequest(
+                    request_data,
+                    parser.method,
+                    parser.uri,
+                    parser.http_version,
+                    parser.headers,
+                    parser.body
+                )
+                
                 logging.info(f"{request.method}  HTTP/1.1")
+                logging.info(f"{request.headers}")
                 response = HTTPResponse(500)
             except Exception as e:
                 logging.error(e)
@@ -49,54 +60,35 @@ class HTTPServer:
             # parse HTTP headers
             headers = request_data.split('\n')
             filename = headers[0].split()[1]
-
-            
-
-            # Request uri
-            print("Request uri")
-            print(request.uri)
             
             # Serve file or return 404 error
             if request.method == "GET":
+                
                 # resource_name = str(request.uri)
                 resource_name = request.uri.lstrip('/')
-                # asset_folder="C:\\Users\colwam\\Desktop\\Http_Server\\web_root\\"
                 
                 filename = os.path.join(os.getcwd(),"web_root", resource_name)
+                # file extension
                 extension = filename.split('.')
-                print("The extension is: "+extension[1])
-                print("File name after changing the server directory:::")
-                print(filename)
                 
                 # server side script code:
+                # checks if the file extension is a .php
                 if extension[1] == "php":
-
-                    print("=================")
-                    print("Inside extension loop..")
-                    print(filename)
-                    print("===================")
                     response = handle_request(filename)
+                    print(response.__bytes__())
                     # Send response
                     client_socket.sendall(response.__bytes__())
-                    
                     # Close connection
                     client_socket.close()
                     print(f"Server script Connection closed with {address}")
                 else:
-                    print("==========================")
-                    print("Not .php file")
-                    print(extension[1])
-                    print("=================================")
+                    logging.info(f"No .php file found...")
 
                 try:
                     # Open file
-                    print("In the try block...")
                     f = open(filename, "rb")
-                    print("File opened")
                     # Read file
                     response_body = f.read()
-                    print("REsponse body====")
-                    print(response_body)
                     # Close file
                     f.close()
                     # Set response headers
@@ -105,8 +97,6 @@ class HTTPServer:
                         "Content-Length": len(response_body),
                         "Connection": "close"
                     }
-                    print("Check if filename is .php")
-                    print(response_headers["Content-Type"])
 
                     # Set response
                     response = HTTPResponse("200 OK", response_headers, response_body)
@@ -114,9 +104,7 @@ class HTTPServer:
                 except:
                     # Set response
                     response = HTTPResponse("404 Not Found")
-                    
-
-                
+  
             else:
                 response = HTTPResponse("405 Method Not Allowed")
                 
@@ -137,7 +125,7 @@ class HTTPServer:
     
     def _get_content_type(self, file_path):
         """Returns the content type for a given file path"""
-        
+
         extension = os.path.splitext(file_path)[1]
         if extension == ".html":
             return "text/html"
@@ -157,5 +145,5 @@ class HTTPServer:
 
 if __name__ == "__main__":
     server = HTTPServer("localhost", 8000)
-    server.serve_forever()
+    server.serve()
 
