@@ -11,6 +11,7 @@ class HTTPRequest:
         self.path = path
         self.headers = headers or {}
         self.body = body or b""
+        
 
 class HTTPResponse:
     def __init__(self, status_code, headers=None, body=None):

@@ -1,5 +1,6 @@
-class HTTPParser(object):
-    """Parses an HTTP request string into its components."""
+
+class HTTPRequest:
+    """A class to represent an HTTP request."""
     def __init__(self, request_string):
         self.method = None
         self.uri = None
@@ -10,7 +11,7 @@ class HTTPParser(object):
         self.parse_request(request_string)
     
     def parse_request(self, request_string):
-        """parses an HTTP request string into its components"""
+        """Parses an HTTP request string into its components."""
         lines = request_string.split("\r\n")
         request_line = lines[0].split()
         
@@ -20,13 +21,11 @@ class HTTPParser(object):
         
         # Parse headers
         for line in lines[1:]:
-            if line == "":
-                break
-            header_parts = line.split(": ")
-            header_name = header_parts[0]
-            header_value = header_parts[1]
-            self.headers[header_name] = header_value
-        
-        # Parse body
-        if "\r\n\r\n" in request_string:
-            self.body = request_string.split("\r\n\r\n")[1]
+            if line.strip():
+                key, value = line.split(":", maxsplit=1)
+                self.headers[key.strip()] = value.strip()
+            
+        # Parse body if applicable
+        if "Content-Length" in self.headers:
+            content_length = int(self.headers["Content-Length"])
+            self.body = lines[-1].encode("utf-8")[:content_length]
