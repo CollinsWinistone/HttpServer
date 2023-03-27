@@ -1,0 +1,6 @@
+INFO:root:GET / HTTP/1.1
+ERROR:root:Request data is empty
+INFO:root:GET / HTTP/1.1
+ERROR:root:Request data is empty
+INFO:root:GET / HTTP/1.1
+INFO:root:GET /index.html HTTP/1.1
