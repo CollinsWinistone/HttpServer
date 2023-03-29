@@ -1,5 +1,6 @@
 import socket
 import os
+import argparse
 import logging # log server information
 from Response.response import HTTPResponse
 from Requests.requests import HTTPRequest
@@ -141,9 +142,34 @@ class HTTPServer:
             return "text/html"
         else:
             return "application/octet-stream"
+    
+
+# Create the parser object
+parser = argparse.ArgumentParser(description='HTTP server from scratch.')
+
+# Define the command line arguments
+parser.add_argument('ip', type=str, help='IP address to listen on')
+parser.add_argument('port', type=int, help='Port to listen on')
+parser.add_argument('--certfile', type=str, help='Path to x509 certificate file for HTTPS encryption')
+parser.add_argument('--keyfile', type=str, help='Path to private key file paired with the x509 certificate')
+
+# Parse the command line arguments
+args = parser.parse_args()
+
+# Access the arguments as properties of the args object
+ip_address = args.ip
+port = args.port
+certfile = args.certfile
+keyfile = args.keyfile
+
+# Check if HTTPS is enabled
+if certfile and not keyfile:
+    print("Error: Private key file is required for HTTPS encryption.")
+    exit(1)
+
 
 
 if __name__ == "__main__":
-    server = HTTPServer("localhost", 8000)
+    server = HTTPServer(ip_address, port)
     server.serve()
 
